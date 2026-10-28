@@ -1,7 +1,7 @@
 ﻿from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from backend.db import init_db
-
+from backend.api import router
 
 @asynccontextmanager
 async def lifespan(app):
@@ -12,6 +12,7 @@ async def lifespan(app):
 
 
 app = FastAPI(title="UK Tick Tracker", lifespan=lifespan)
+app.include_router(router)
 
 
 @app.get("/api/health")
