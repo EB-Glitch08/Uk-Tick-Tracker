@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from backend.api import router
+from backend.errors import register_error_handlers
+from backend.insights import router as insights_router
 from backend.search import router as search_router
 from backend.db import get_connection, init_db
 from backend.importer import import_elanco
@@ -31,8 +33,10 @@ async def lifespan(app):
 
 
 app = FastAPI(title="UK Tick Tracker", lifespan=lifespan)
+register_error_handlers(app)
 app.include_router(router)
 app.include_router(search_router)
+app.include_router(insights_router)
 
 
 @app.get("/api/health")
