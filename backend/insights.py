@@ -4,6 +4,7 @@ from typing import Literal, Optional
 
 from fastapi import APIRouter, HTTPException
 
+from backend.cities import CITIES
 from backend.db import get_connection
 
 router = APIRouter(prefix="/api/insights")
@@ -82,37 +83,52 @@ def sightings_per_location(
     conn = get_connection()
     try:
         rows = conn.execute(
-            "SELECT COALESCE(location, 'Other') AS location, region, lat, lon, species, "
+            "SELECT COALESCE(location, 'Other') AS location, region, "
+            "ROUND(lat, 2) AS lat, ROUND(lon, 2) AS lon, species, "
             "COUNT(*) AS count, MAX(sighted_on) AS latest "
             f"FROM sightings {where} "
-            # Sightings in a city group together. Ones that aren't near any city
-            # have no city name, so they group by their own position instead and
-            # get a bubble of their own rather than being piled on top of
-            # unrelated sightings somewhere else.
-            "GROUP BY COALESCE(location, ROUND(lat, 2) || ',' || ROUND(lon, 2)), species "
-            "ORDER BY location, count DESC",
+            "GROUP BY COALESCE(location, 'Other'), region, ROUND(lat, 2), ROUND(lon, 2), species",
             values,
         ).fetchall()
     finally:
         conn.close()
 
-    # Fold the per-species rows into one entry per place.
+    # Fold the rows into one entry per place.
     places = {}
     for row in rows:
-        place = places.setdefault((row["location"], row["lat"], row["lon"]), {
-            "location": row["location"],
-            "region": row["region"],
-            "lat": row["lat"],
-            "lon": row["lon"],
+        name = row["location"]
+        if name in CITIES:
+            # A city is a single place, however far from the centre a user's
+            # report was. We use the city's own coordinates so its bubble stays
+            # put instead of drifting towards whichever report came last.
+            key = name
+            lat, lon, region = CITIES[name]
+        else:
+            # Spots that aren't near any city: one place per position, rounded
+            # to about a kilometre, so unrelated sightings aren't lumped together.
+            key = (name, row["lat"], row["lon"])
+            lat, lon, region = row["lat"], row["lon"], row["region"]
+
+        place = places.setdefault(key, {
+            "location": name,
+            "region": region,
+            "lat": lat,
+            "lon": lon,
             "count": 0,
             "latest": row["latest"],
-            "species": [],
+            "species": {},
         })
         place["count"] += row["count"]
         place["latest"] = max(place["latest"], row["latest"])
-        place["species"].append({"species": row["species"], "count": row["count"]})
+        place["species"][row["species"]] = place["species"].get(row["species"], 0) + row["count"]
 
-    locations = sorted(places.values(), key=lambda p: p["count"], reverse=True)
+    # Turn each species tally into a list, most common first.
+    locations = []
+    for place in places.values():
+        tally = sorted(place["species"].items(), key=lambda item: (-item[1], item[0]))
+        place["species"] = [{"species": name, "count": count} for name, count in tally]
+        locations.append(place)
+    locations.sort(key=lambda p: p["count"], reverse=True)
     return {"total": sum(p["count"] for p in locations), "locations": locations}
 
 

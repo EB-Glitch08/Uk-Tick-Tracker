@@ -1,5 +1,5 @@
 """Clean one raw record from Elanco's API into a row we can store."""
-from datetime import datetime
+from datetime import date, datetime
 
 from backend.cities import CITIES
 from backend.helpers import make_dedupe_key
@@ -20,11 +20,17 @@ def clean_record(raw):
         return value.strip() if isinstance(value, str) else ""
 
     # The date is required. Without it the sighting can't go on a timeline or a trend.
+    # A "Z" on the end of a date means UTC. Older versions of Python can't read
+    # that, so we swap it for "+00:00", which every version understands.
     try:
-        when = datetime.fromisoformat(text("date"))
+        when = datetime.fromisoformat(text("date").replace("Z", "+00:00"))
     except ValueError:
         raise ValueError(f"missing or invalid date: {raw.get('date')!r}")
-    if when > datetime.now():
+
+    # A record may or may not carry a time zone. Comparing a date that has one
+    # against a date that doesn't raises an error in Python, which would stop the
+    # whole import, so we compare the calendar date only. That is all we store.
+    if when.date() > date.today():
         raise ValueError(f"date is in the future: {text('date')}")
 
     city = text("location").title()           # "newcastle " -> "Newcastle"
@@ -53,5 +59,8 @@ def clean_record(raw):
         "latin_name": latin_name,
         "is_complete": is_complete,
         # Elanco records include a time, so the key uses the full timestamp.
-        "dedupe_key": make_dedupe_key(when.isoformat(), latin_name or species, city),
+        # The time zone is dropped from the key so the same record always makes
+        # the same key, even if Elanco changes how it writes its dates.
+        "dedupe_key": make_dedupe_key(
+            when.replace(tzinfo=None).isoformat(), latin_name or species, city),
     }

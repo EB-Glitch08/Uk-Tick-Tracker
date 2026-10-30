@@ -9,8 +9,16 @@ DB_PATH = Path(__file__).resolve().parent.parent / "data" / "ticks.db"
 def get_connection():
     """Open a connection to the database, creating the data folder if needed."""
     DB_PATH.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+
+    # timeout: if another job is writing, wait up to 15 seconds instead of
+    # failing immediately. The import writes a thousand rows at a time, so a
+    # report sent while that is happening would otherwise be refused.
+    conn = sqlite3.connect(DB_PATH, timeout=15)
     conn.row_factory = sqlite3.Row   # so rows can be read by column name
+
+    # Write-Ahead Logging lets the site keep reading while the import writes,
+    # so pages still load during a refresh of Elanco's data.
+    conn.execute("PRAGMA journal_mode = WAL")
     return conn
 
 

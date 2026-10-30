@@ -16,7 +16,7 @@ class SightingIn(BaseModel):
     lat: float = Field(ge=49.8, le=60.9)               # latitude: south to north
     lon: float = Field(ge=-8.7, le=1.8)                # longitude: west to east
     location: Optional[str] = Field(default=None, max_length=100)   # optional place name
-    species: str = Field(default="Unknown", max_length=100)         # "Unknown" if they can't tell
+    species: Optional[str] = Field(default="Unknown", max_length=100)  # "Unknown" if they can't tell
     notes: Optional[str] = Field(default=None, max_length=500)      # optional free text
 
     @field_validator("sighted_on")
@@ -25,4 +25,15 @@ class SightingIn(BaseModel):
         """A tick can't have been seen tomorrow."""
         if value > date.today():
             raise ValueError("The date can't be in the future.")
+        return value
+
+    @field_validator("species")
+    @classmethod
+    def species_is_never_empty(cls, value):
+        """A form that leaves the species blank sends nothing, or an empty value.
+
+        Either way we record it as Unknown rather than refusing the report.
+        """
+        if value is None or not value.strip():
+            return "Unknown"
         return value
