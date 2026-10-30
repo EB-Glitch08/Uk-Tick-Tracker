@@ -35,6 +35,23 @@ def tidy_species(conn, species):
     return existing["species"] if existing else species
 
 
+# What a tick was found on. The form offers these, but a report that names
+# something else is still kept, in the reporter's own words.
+KNOWN_HOSTS = ["Dog", "Cat", "Person", "Vegetation", "Other / not sure"]
+
+
+def tidy_host(host):
+    """Tidy the host to the site's own wording where we recognise it."""
+    if host is None or not host.strip():
+        return None
+
+    host = host.strip()
+    for known in KNOWN_HOSTS:
+        if host.lower() == known.lower():
+            return known
+    return host
+
+
 def warnings_for(report, species, city):
     """Things worth telling the user about a report we are still going to save.
 
@@ -71,6 +88,9 @@ def create_sighting(report: SightingIn):
     typed_place = report.location.strip() if report.location else ""
     location = city or typed_place or None
 
+    # What the tick was found on, tidied to the wording the site uses.
+    host = tidy_host(report.host)
+
     created_at = datetime.now(timezone.utc).isoformat(timespec="seconds")
 
     conn = get_connection()
@@ -84,10 +104,10 @@ def create_sighting(report: SightingIn):
         cursor = conn.execute(
             """INSERT INTO sightings
                (source, sighted_on, lat, lon, location, region, species,
-                notes, is_complete, dedupe_key, created_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)""",
+                notes, host, is_complete, dedupe_key, created_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)""",
             ("user", day, report.lat, report.lon, location, region,
-             species, report.notes, dedupe_key, created_at),
+             species, report.notes, host, dedupe_key, created_at),
         )
         conn.commit()
         new_id = cursor.lastrowid
@@ -99,9 +119,12 @@ def create_sighting(report: SightingIn):
 
     return {
         "id": new_id,
+        # A reference the reporter can quote, built from the date and the id.
+        "reference": f"UK-{day[:4]}-{new_id:04d}",
         "location": location,
         "region": region,
         "species": species,
+        "host": host,
         "warnings": warnings_for(report, species, city),
         "message": "Sighting saved.",
     }

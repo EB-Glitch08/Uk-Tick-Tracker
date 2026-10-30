@@ -1,0 +1,780 @@
+/* ============================================================================
+   UK Tick Tracker — styles
+
+   The colours, sizes and spacing below come from the Figma design for this
+   project. They are set once here as custom properties so the whole site can
+   be restyled from one place, and so the same blue is never typed twice.
+   ========================================================================= */
+
+:root {
+  /* Brand and text */
+  --blue:        #006fa7;   /* Elanco blue: links, buttons, the active tab */
+  --blue-deep:   #005481;   /* page headings */
+  --teal-deep:   #005763;   /* the small label above a heading */
+  --teal:        #40dbcc;   /* the bar under the current tab */
+  /* The same teal, darkened until it passes the contrast minimum against
+     white. Used wherever the teal carries text or a figure rather than
+     decoration. #40dbcc reaches only 1.7:1, where 3:1 is the minimum. */
+  --teal-text:   #139c90;
+  --ink:         #173447;   /* strongest text */
+  --ink-soft:    #607582;   /* tabs that aren't current */
+  --green-ink:   #3f7058;   /* supporting text and notices */
+
+  /* Surfaces and lines */
+  --surface:     #f8fcff;   /* the bar across the top */
+  --card:        #ffffff;
+  --mint:        #eaf7f2;   /* notices and quiet panels */
+  --chip-grey:   #edf4ed;
+  --line:        #d6e8f0;
+  --divider:     #dce5e9;
+  --page-top:    #f9fdff;   /* the page fades from this... */
+  --page-bottom: #edf6f2;   /* ...to this */
+
+  /* States */
+  --danger:      #a3321f;
+  --danger-bg:   #fdeeec;
+  --danger-line: #e3a79c;
+  --warn:        #8a5a00;
+  --warn-bg:     #fff6e0;
+  --warn-line:   #e3c27a;
+  --focus:       #ffb703;
+
+  --radius:      6px;
+  --radius-lg:   10px;
+  --gutter:      40px;
+  --maxw:        1440px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; }
+
+body {
+  margin: 0;
+  font-family: "Source Sans 3", system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  background: linear-gradient(180deg, var(--page-top) 0%, var(--page-bottom) 100%);
+  background-attachment: fixed;
+  display: flex;
+  flex-direction: column;
+  /* Stops iOS inflating text in landscape. */
+  -webkit-text-size-adjust: 100%;
+}
+
+h1, h2, h3, h4 { margin: 0; font-weight: 600; line-height: 1.25; color: var(--blue-deep); }
+h1 { font-size: 32px; font-weight: 400; }
+h2 { font-size: 19px; }
+h3 { font-size: 15px; }
+p  { margin: 0; }
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* A focus ring that is visible on every background we use. */
+:focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 6px var(--focus);
+}
+
+[hidden] { display: none !important; }
+
+/* Only read by screen readers. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+.skip {
+  position: absolute; left: -9999px; top: 8px; z-index: 100;
+  background: #fff; color: var(--ink);
+  padding: 10px 16px; border-radius: var(--radius); font-weight: 600;
+}
+.skip:focus { left: 8px; }
+
+/* ---- Icons --------------------------------------------------------------
+   One size and stroke by default; the modifiers below change the size only. */
+.ic {
+  width: 17px; height: 17px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.ic-13 { width: 13px; height: 13px; }
+.ic-14 { width: 14px; height: 14px; }
+.ic-15 { width: 15px; height: 15px; }
+.ic-20 { width: 20px; height: 20px; }
+.ic-24 { width: 24px; height: 24px; }
+.ic-28 { width: 28px; height: 28px; }
+
+/* ---- Header -------------------------------------------------------------- */
+.site-head { background: var(--surface); border-bottom: 1px solid var(--line); }
+
+.nav {
+  max-width: var(--maxw); margin: 0 auto;
+  min-height: 84px; padding: 0 var(--gutter);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+}
+
+.brand { display: flex; align-items: center; gap: 22px; }
+
+.elanco { display: flex; flex-direction: column; align-items: center; color: var(--blue); }
+.elanco-name {
+  font-size: 29px; font-weight: 800; font-style: italic; line-height: 1;
+  letter-spacing: -.01em;
+}
+.elanco-sub { font-size: 7px; font-weight: 600; letter-spacing: .08em; line-height: 1.6; }
+
+.brand-divider { width: 1px; height: 32px; background: var(--divider); }
+
+.product {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--ink); font-size: 18px; font-weight: 700;
+}
+.product:hover { text-decoration: none; color: var(--blue); }
+.brand-mark { color: var(--blue); stroke-width: 2; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 9px; border-radius: 4px;
+  font-size: 11px; font-weight: 600;
+}
+.chip-grey { background: var(--chip-grey); color: var(--green-ink); }
+.chip-mint { background: var(--mint); color: var(--blue-deep); }
+.chip-warn { background: var(--warn-bg); color: var(--warn); }
+
+/* The tabs. The bar under the current one is drawn with a border so it keeps
+   its place when a tab is in bold. */
+.nav-links { display: flex; align-items: stretch; gap: 32px; }
+.nav-links a {
+  display: flex; align-items: center;
+  min-height: 56px; padding: 2px 0;
+  font-size: 14px; color: var(--ink-soft); font-weight: 500;
+  border-bottom: 3px solid transparent;
+}
+.nav-links a:hover { color: var(--blue); text-decoration: none; }
+.nav-links a[aria-current="page"] {
+  color: var(--blue); font-weight: 400; border-bottom-color: var(--teal);
+}
+
+/* ---- Buttons ------------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 44px; padding: 10px 18px;
+  border: 1px solid transparent; border-radius: var(--radius);
+  font: inherit; font-size: 14px; font-weight: 600;
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+}
+.btn:hover { text-decoration: none; }
+.btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn-primary:hover { background: #005b8a; border-color: #005b8a; color: #fff; }
+.btn-quiet { background: #fff; border-color: var(--line); color: var(--blue-deep); }
+.btn-quiet:hover { background: var(--mint); }
+.btn-small { min-height: 36px; padding: 6px 12px; font-size: 13px; }
+.btn[disabled] { opacity: .55; cursor: not-allowed; }
+
+/* ---- The sample-data bar ------------------------------------------------- */
+.notice-bar {
+  background: var(--mint); border-top: 1px solid var(--line);
+  color: var(--green-ink); font-size: 12px;
+  padding: 8px var(--gutter);
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.notice-bar > span:last-child { max-width: 100ch; }
+.notice-tag { font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+
+/* ---- Page layout --------------------------------------------------------- */
+main { flex: 1 0 auto; width: 100%; max-width: var(--maxw); margin: 0 auto; }
+.view { padding: 0 var(--gutter) 40px; }
+
+.page-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  padding: 30px 0 26px;
+}
+.eyebrow {
+  font-size: 10px; font-weight: 700; letter-spacing: .09em;
+  color: var(--teal-deep); text-transform: uppercase;
+}
+.page-head .lede { color: var(--green-ink); max-width: 86ch; margin-top: 8px; }
+.page-head h1 { margin-top: 8px; }
+
+/* ---- Cards and panels ---------------------------------------------------- */
+.card {
+  background: var(--card); border: 1px solid var(--line);
+  border-radius: var(--radius-lg); padding: 20px;
+}
+.card + .card { margin-top: 18px; }
+.panel-title {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.panel-note { font-size: 11px; color: var(--green-ink); }
+
+.muted { color: var(--green-ink); }
+.tiny  { font-size: 11px; }
+.small { font-size: 12px; }
+
+/* ---- Messages ------------------------------------------------------------ */
+.msg {
+  display: flex; gap: 10px; align-items: flex-start;
+  border: 1px solid; border-radius: var(--radius);
+  padding: 12px 14px; font-size: 13px;
+}
+.msg-error { background: var(--danger-bg); border-color: var(--danger-line); color: var(--danger); }
+.msg-warn  { background: var(--warn-bg);   border-color: var(--warn-line);   color: var(--warn); }
+.msg-ok    { background: var(--mint);      border-color: #9fd3bd;            color: var(--green-ink); }
+.msg ul { margin: 6px 0 0; padding-left: 18px; }
+.msg a { color: inherit; text-decoration: underline; }
+
+/* While a screen is fetching its data. */
+.loading { color: var(--green-ink); padding: 28px 0; font-size: 13px; }
+
+/* ---- Footer -------------------------------------------------------------- */
+.site-foot {
+  flex: none;
+  max-width: var(--maxw); width: 100%; margin: 0 auto;
+  padding: 24px var(--gutter) 30px;
+  display: flex; flex-direction: column; gap: 18px;
+}
+.caveat {
+  background: var(--mint); border-radius: var(--radius);
+  padding: 10px 12px; color: var(--green-ink); font-size: 11px;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.foot-links {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; flex-wrap: wrap; font-size: 11px; color: var(--green-ink);
+}
+.foot-policy { display: flex; gap: 24px; flex-wrap: wrap; }
+.foot-policy a { color: var(--blue-deep); }
+
+/* ---- Narrow screens ------------------------------------------------------
+   The design is drawn at 1440px. These rules keep it usable on a phone:
+   nothing is hidden, it just stacks. */
+@media (max-width: 900px) {
+  :root { --gutter: 20px; }
+  .nav { min-height: 0; padding-top: 12px; padding-bottom: 12px; }
+  .nav-links { order: 3; width: 100%; gap: 18px; overflow-x: auto; }
+  .nav-links a { min-height: 44px; }
+  .nav-cta { order: 2; }
+  h1 { font-size: 26px; }
+}
+
+/* ============================================================================
+   Explore sightings
+   ========================================================================= */
+
+/* ---- The filter bar ------------------------------------------------------ */
+.filters {
+  display: flex; align-items: flex-end; gap: 16px;
+  flex-wrap: wrap; padding-bottom: 24px;
+}
+.filter { display: flex; flex-direction: column; gap: 7px; }
+.filter-dates   { width: 280px; }
+.filter-place   { width: 300px; }
+.filter-species { width: 250px; }
+
+.filter-label { font-size: 11px; font-weight: 600; color: var(--ink-soft); }
+
+.field {
+  width: 100%; min-height: 44px;
+  background: #fff; border: 1px solid #b9d7e8; border-radius: var(--radius);
+  padding: 10px 12px;
+  font: inherit; font-size: 13px; color: var(--blue-deep);
+}
+.field:hover { border-color: var(--blue); }
+
+/* The search icon sits inside the box, so the box still looks like one field. */
+.field-with-icon { position: relative; display: block; }
+.field-with-icon .ic {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--ink-soft); pointer-events: none;
+}
+.field-with-icon .field { padding-right: 34px; }
+
+.field-pair { display: flex; align-items: center; gap: 8px; margin-top: 7px; }
+.field-pair .field { font-size: 12px; padding: 8px 10px; }
+
+.btn-reset {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 44px; padding: 0 10px;
+  background: var(--mint); border: 1px solid transparent; border-radius: var(--radius);
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--blue-deep);
+  cursor: pointer;
+}
+.btn-reset:hover { background: #dcf0e7; }
+
+.results-meta { flex: 1 1 auto; text-align: right; min-height: 44px; line-height: 44px; margin: 0; }
+
+/* ---- Map and panel side by side ------------------------------------------ */
+.map-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+
+.map-box {
+  flex: 999 1 560px; min-width: 0; position: relative;
+  background: #fff; border: 1px solid #b9d7e8; border-radius: var(--radius-lg);
+  padding: 16px;
+}
+.overview { flex: 1 1 340px; min-width: 0; border-color: #b9d7e8; padding: 22px; }
+
+
+
+/* Map / List switch */
+.map-toggle {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--mint); border-radius: var(--radius);
+  margin-bottom: 12px;
+}
+.toggle {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 34px; padding: 6px 12px;
+  background: transparent; border: 0; border-radius: 4px;
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--green-ink);
+  cursor: pointer;
+}
+.toggle.on { background: #fff; color: var(--blue-deep); box-shadow: 0 1px 3px rgba(23,52,71,.14); }
+
+/* The key, floated over the map on a wide screen and stacked under it on a
+   narrow one, where there is no room beside the drawing. */
+.map-legend {
+  background: #fff; border: 1px solid #b9d7e8; border-radius: var(--radius);
+  box-shadow: 0 3px 14px rgba(23,52,71,.09);
+  padding: 16px; width: 226px;
+}
+.legend-title { font-size: 12px; font-weight: 700; color: var(--blue-deep); margin-bottom: 10px; }
+.legend-list { list-style: none; margin: 0 0 10px; padding: 0; }
+.legend-list li {
+  display: flex; align-items: center; gap: 9px;
+  font-size: 11px; color: var(--blue-deep); padding: 3px 0;
+}
+.legend-dot { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.legend-note { color: var(--green-ink); line-height: 1.5; }
+
+/* The key sits beside the drawing on a wide screen and above it on a narrow
+   one, so it never covers part of the country. */
+.map-figure { display: flex; gap: 20px; align-items: flex-start; }
+.map-figure > .map-frame { flex: 1 1 auto; min-width: 0; }
+
+
+@media (max-width: 1099px) {
+  .map-figure { flex-direction: column; }
+  .map-legend { width: 100%; }
+  .map-figure .map-svg { max-width: 100%; align-self: center; }
+}
+
+.map-foot { margin-top: 10px; }
+
+/* The panel that opens when a place is chosen */
+.place-card {
+  position: absolute; right: 24px; top: 70px; width: 280px; z-index: 3;
+  background: #fff; border: 1px solid #b9d7e8; border-radius: var(--radius);
+  box-shadow: 0 6px 22px rgba(23,52,71,.14);
+  padding: 16px; display: flex; flex-direction: column; gap: 12px;
+}
+.place-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.icon-btn {
+  background: none; border: 0; border-radius: 4px; cursor: pointer;
+  color: var(--ink-soft); padding: 6px; min-width: 32px; min-height: 32px;
+}
+.icon-btn:hover { background: var(--mint); color: var(--ink); }
+
+.place-species, .place-recent { list-style: none; margin: 0; padding: 0; }
+.place-species li, .place-recent li {
+  display: flex; justify-content: space-between; gap: 10px;
+  font-size: 12px; padding: 4px 0;
+}
+.place-recent { border-top: 1px solid var(--line); padding-top: 6px; }
+.place-recent a { display: flex; justify-content: space-between; gap: 10px; width: 100%; }
+
+@media (max-width: 1099px) {
+  .place-card { position: static; width: auto; margin-top: 12px; box-shadow: none; }
+}
+
+/* ---- The overview panel --------------------------------------------------- */
+.overview .panel-title h2 { font-size: 18px; font-weight: 700; }
+.divider { height: 1px; background: #b9d7e8; margin: 16px 0; }
+
+.metrics { display: flex; gap: 16px; }
+.metric { flex: 1 1 0; min-width: 0; }
+.metric-value { font-size: 34px; line-height: 1.1; color: var(--teal-text); }
+.metric-label { font-size: 11px; color: var(--green-ink); }
+
+.region-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.region-list li { display: flex; align-items: center; gap: 10px; }
+.region-name  { width: 150px; font-size: 12px; color: var(--blue-deep); }
+.region-track { flex: 1 1 0; min-width: 0; height: 5px; background: var(--mint); border-radius: 3px; }
+.region-bar   { display: block; height: 5px; background: var(--teal); border-radius: 3px; }
+.region-count { width: 34px; text-align: right; font-size: 12px; color: var(--blue-deep); }
+
+ /* The month labels can't wrap, so on a narrow screen the chart scrolls
+    sideways rather than forcing the whole panel wider than the window. */
+.bars { display: flex; gap: 6px; align-items: flex-end; height: 104px;
+        overflow-x: auto; padding-bottom: 4px; }
+.bar-col {
+  flex: 1 0 22px; min-width: 22px; height: 104px;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px;
+}
+.bar { display: block; width: 100%; background: var(--mint); border-radius: 3px 3px 0 0; }
+.bar-latest { background: var(--blue); }
+.bar-value { font-size: 10px; color: var(--blue-deep); }
+.bar-label { font-size: 10px; color: var(--green-ink); white-space: nowrap; }
+
+/* ---- Tables --------------------------------------------------------------- */
+.table-wrap { overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table caption { text-align: left; }
+.table th, .table td {
+  text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.table th { font-size: 11px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase;
+             letter-spacing: .04em; }
+.table tbody tr:hover { background: #f6fbfa; }
+
+/* ============================================================================
+   Sighting detail
+   ========================================================================= */
+.detail-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.detail-side { flex: 1 1 400px; border-color: #b9d7e8; padding: 24px;
+               display: flex; flex-direction: column; gap: 18px; }
+
+.detail-heading { font-size: 24px; font-weight: 400; color: var(--ink); }
+.detail-heading-sm { font-size: 18px; font-weight: 400; color: var(--ink); }
+.detail-place { display: flex; flex-direction: column; gap: 6px; }
+.detail-precision { display: flex; align-items: center; gap: 6px;
+                    font-size: 11px; color: var(--ink-soft); }
+
+.detail-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn-flat {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  min-height: 36px; padding: 6px 14px;
+  background: #fff; border: 1px solid var(--divider); border-radius: var(--radius);
+  font: inherit; font-size: 12px; font-weight: 600; color: var(--blue-deep);
+  cursor: pointer; text-decoration: none;
+}
+.btn-flat:hover { background: var(--mint); text-decoration: none; }
+.share-note { word-break: break-all; }
+
+.divider.thin { margin: 0; background: var(--divider); }
+
+.attributes { display: flex; gap: 20px; flex-wrap: wrap; }
+.attribute { flex: 1 1 150px; display: flex; flex-direction: column; gap: 5px; }
+.attribute-label { font-size: 11px; color: var(--ink-soft); }
+.attribute-value { font-size: 15px; font-weight: 600; color: var(--ink); }
+.attribute-value.with-icon { display: flex; align-items: center; gap: 6px; }
+.attribute-note { font-size: 11px; font-style: italic; color: var(--ink-soft); }
+
+.verification { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.reporter-note { display: flex; flex-direction: column; gap: 6px; }
+.note-text { font-size: 12px; color: var(--ink); line-height: 1.55; }
+.report-photo {
+  width: 100%; max-height: 220px; object-fit: cover;
+  border-radius: var(--radius); border: 1px solid var(--line);
+  background: var(--mint);
+}
+
+/* The list of what has been reported around this one. */
+.timeline { list-style: none; margin: 0; padding: 0;
+            display: flex; flex-direction: column; gap: 12px; }
+.timeline-entry { display: flex; gap: 12px; align-items: flex-start; }
+.timeline-dot {
+  width: 9px; height: 9px; margin-top: 5px; flex: none;
+  border-radius: 50%; background: #c3d6de;
+}
+.is-this .timeline-dot { background: var(--blue); box-shadow: 0 0 0 3px #d7eefb; }
+.timeline-date { width: 64px; flex: none; font-size: 11px; color: var(--ink-soft); }
+.timeline-event { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.timeline-title { font-size: 12px; font-weight: 600; color: var(--ink); }
+a.timeline-title:hover { color: var(--blue); }
+.timeline-what { font-size: 10px; color: var(--ink-soft); }
+
+.more-link { font-size: 12px; font-weight: 600; }
+
+/* ============================================================================
+   Report a sighting
+   ========================================================================= */
+.report-row { display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+.report-form { flex: 999 1 560px; min-width: 0; border-color: #b9d7e8;
+               display: flex; flex-direction: column; gap: 20px; padding: 24px; }
+.report-aside { flex: 1 1 320px; display: flex; flex-direction: column; gap: 18px; }
+.report-aside .card + .card { margin-top: 0; }
+
+.form-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+
+.step { border: 0; border-top: 1px solid var(--divider); margin: 0; padding: 18px 0 0; }
+.step:first-of-type { border-top: 0; padding-top: 0; }
+.step-legend { display: flex; align-items: center; gap: 10px; padding: 0; }
+.step-number {
+  width: 22px; height: 22px; flex: none; border-radius: 50%;
+  background: var(--mint); color: var(--blue-deep);
+  font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.step-title { font-size: 15px; font-weight: 600; color: var(--ink); }
+.step-hint { font-size: 11px; color: var(--ink-soft); display: flex; align-items: center; gap: 5px; }
+.step-hint.found { color: var(--green-ink); font-weight: 600; }
+.step-hint.not-found { color: var(--danger); font-weight: 600; }
+.step-body { margin-top: 12px; display: flex; flex-direction: column; gap: 14px; }
+
+.field-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.field-row .filter { flex: 1 1 240px; }
+.field-head { display: flex; align-items: baseline; justify-content: space-between;
+              gap: 12px; flex-wrap: wrap; }
+.field-foot { display: flex; justify-content: space-between; gap: 12px; }
+
+textarea.field { min-height: 92px; resize: vertical; line-height: 1.5; }
+.field.is-wrong { border-color: var(--danger); background: #fffafa; }
+
+.field-error {
+  display: flex; align-items: center; gap: 6px;
+  color: var(--danger); font-size: 12px; font-weight: 600;
+}
+
+/* Choosing the species */
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; }
+.choice {
+  display: flex; align-items: flex-start; gap: 10px;
+  border: 1px solid var(--divider); border-radius: var(--radius);
+  padding: 12px; cursor: pointer; background: #fff;
+}
+.choice:hover { border-color: var(--blue); }
+.choice.chosen { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); background: #f7fcff; }
+.choice input { margin-top: 3px; accent-color: var(--blue); }
+.choice-body { display: flex; flex-direction: column; gap: 2px; }
+.choice-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+.choice-latin { font-size: 11px; font-style: italic; color: var(--ink-soft); }
+
+/* Choosing what it was found on */
+.chips { display: flex; gap: 10px; flex-wrap: wrap; }
+.chip-choice {
+  display: inline-flex; align-items: center; gap: 7px;
+  min-height: 40px; padding: 8px 14px;
+  border: 1px solid var(--divider); border-radius: var(--radius);
+  background: #fff; font-size: 13px; cursor: pointer; color: var(--ink);
+}
+.chip-choice:hover { border-color: var(--blue); }
+.chip-choice.chosen { border-color: var(--blue); background: #f7fcff; color: var(--blue-deep);
+                      font-weight: 600; box-shadow: inset 0 0 0 1px var(--blue); }
+.chip-choice input { accent-color: var(--blue); }
+
+/* The photo box */
+.dropzone {
+  display: flex; align-items: center; gap: 14px; position: relative;
+  border: 1px dashed #9ec4d6; border-radius: var(--radius);
+  background: #f7fcff; padding: 16px; color: var(--blue-deep);
+}
+.dropzone:focus-within { border-color: var(--blue); }
+.file-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+.consent {
+  display: flex; gap: 10px; align-items: flex-start;
+  font-size: 12px; color: var(--ink);
+  background: var(--mint); border-radius: var(--radius); padding: 12px 14px;
+}
+.consent.is-wrong { background: var(--danger-bg); }
+.consent input { margin-top: 2px; accent-color: var(--blue); width: 17px; height: 17px; }
+
+.form-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+
+/* The dark panel beside the form */
+.card-dark {
+  background: linear-gradient(160deg, #00607f 0%, #014f67 100%);
+  border-color: transparent; color: #eaf7f2;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.dark-title { color: #fff; font-size: 18px; font-weight: 600; }
+.dark-text { color: #cfe9e2; font-size: 12px; line-height: 1.55;
+             display: flex; align-items: center; gap: 6px; }
+
+/* ---- The confirmation ----------------------------------------------------- */
+.confirm-main { flex: 999 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px;
+                border-color: #b9d7e8; padding: 28px; }
+.confirm-side { flex: 1 1 320px; border-color: #b9d7e8; background: #fbfdfc;
+                display: flex; flex-direction: column; gap: 12px; }
+.tick-badge {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--mint); color: var(--green-ink);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.reference {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: var(--mint); border-radius: var(--radius); padding: 8px 12px; width: fit-content;
+}
+.reference-label { font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+                   color: var(--green-ink); font-weight: 700; }
+.reference-value { font-size: 14px; font-weight: 600; color: var(--blue-deep);
+                   font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+.next-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.next-steps li { display: flex; gap: 12px; align-items: flex-start; color: var(--blue); }
+.next-steps p { color: var(--ink); }
+
+.summary { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+.summary dt { font-size: 11px; color: var(--ink-soft); }
+.summary dd { margin: 0; font-size: 13px; color: var(--ink); }
+
+/* ============================================================================
+   The tick guide
+   ========================================================================= */
+.guide-nav {
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: 12px; margin-bottom: 20px;
+}
+.guide-nav a { font-size: 13px; font-weight: 600; }
+.guide-nav .tiny { margin-left: auto; }
+
+.guide-banner { margin-bottom: 24px; }
+.guide-banner strong { color: var(--blue-deep); }
+
+.section-title { font-size: 22px; font-weight: 600; margin-bottom: 6px; }
+.lede.small { font-size: 13px; margin-bottom: 16px; }
+
+.species-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px; margin-bottom: 28px;
+}
+.species-card {
+  background: #fff; border: 1px solid var(--line); border-radius: var(--radius-lg);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.tick-art { display: block; width: 100%; height: auto; background: #f2f7f1; }
+.species-body { padding: 16px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.species-fact { display: flex; flex-direction: column; gap: 2px; }
+
+/* The month-by-month chart */
+.season { display: flex; align-items: flex-end; gap: 6px; height: 140px; margin: 14px 0 10px; }
+.season-col { flex: 1 1 0; display: flex; flex-direction: column;
+              align-items: center; justify-content: flex-end; gap: 6px; height: 100%; }
+.season-bar { display: block; width: 100%; background: #cfe6d8; border-radius: 3px 3px 0 0; }
+.season-peak { background: var(--blue); }
+.season-label { font-size: 10px; color: var(--ink-soft); }
+
+.guide-foot { align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 24px; }
+.guide-foot .more-link { margin-left: auto; }
+.sources { margin-top: 14px; }
+/* Links sitting inside a block of text are underlined, so they can be picked
+   out without relying on colour. */
+.sources a, .note-text a, .lede a, .msg a { text-decoration: underline; }
+
+/* Two cards side by side, stacking when there isn't room. */
+.two-up { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 24px; }
+.two-up > * { flex: 1 1 340px; min-width: 0; }
+.two-up .card + .card { margin-top: 0; }
+
+.tips { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.tips li { font-size: 13px; line-height: 1.55; }
+
+/* The list of prevention habits needs room to breathe above the closing note. */
+.next-steps + .tiny { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+
+/* ============================================================================
+   The map
+   ========================================================================= */
+.map-frame { position: relative; }
+
+.uk-map {
+  display: block; width: 100%; height: auto;
+  max-height: 660px;
+  background: #eaf3f7;                 /* the sea */
+  border-radius: var(--radius);
+  touch-action: none;                  /* so dragging pans rather than scrolls */
+  cursor: grab;
+}
+.uk-map.is-dragging { cursor: grabbing; }
+
+.map-context { fill: #e8eae7; stroke: #cfd6cf; stroke-width: 0.8; }
+
+.map-area {
+  stroke: #9fbdae; stroke-width: 0.7; stroke-linejoin: round;
+  transition: fill .15s ease;
+}
+
+.sea-label {
+  font-size: 11px; fill: #7a9eae; font-style: italic;
+  text-anchor: middle; pointer-events: none; user-select: none;
+}
+
+.place-label {
+  font-size: 9.5px; fill: var(--ink); font-weight: 600;
+  pointer-events: none; user-select: none;
+  paint-order: stroke; stroke: #ffffff; stroke-width: 3px; stroke-linejoin: round;
+}
+
+.cluster { cursor: pointer; }
+.cluster:hover circle { stroke: var(--ink); }
+.cluster:focus-visible { outline: none; }
+.cluster:focus-visible circle { stroke: var(--ink); stroke-width: 3.5; }
+.cluster.chosen circle { stroke: var(--ink); }
+.cluster-count {
+  font-size: 9px; font-weight: 700; fill: #fff;
+  text-anchor: middle; pointer-events: none; user-select: none;
+}
+
+/* Controls floated over the map, as in the design. */
+.map-controls {
+  position: absolute; top: 14px; right: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.map-button-group {
+  display: flex; flex-direction: column;
+  border-radius: var(--radius); overflow: hidden;
+  box-shadow: 0 2px 8px rgba(23, 52, 71, .16);
+}
+.map-button {
+  width: 38px; height: 38px; display: inline-flex;
+  align-items: center; justify-content: center;
+  background: #fff; border: 1px solid var(--line); color: var(--blue-deep);
+  cursor: pointer; padding: 0;
+}
+.map-button + .map-button { border-top: 0; }
+.map-button:hover:not([disabled]) { background: var(--mint); }
+.map-button[disabled] { color: #9fb6c2; cursor: default; }
+.map-controls > .map-button {
+  border-radius: var(--radius); box-shadow: 0 2px 8px rgba(23, 52, 71, .16);
+}
+
+.map-compass {
+  position: absolute; top: 152px; right: 20px;
+  display: flex; flex-direction: column; align-items: center;
+  color: var(--ink-soft); pointer-events: none;
+}
+.compass-n { font-size: 10px; font-weight: 700; }
+
+.map-scale {
+  position: absolute; right: 16px; bottom: 34px;
+  display: flex; flex-direction: column; align-items: flex-end; gap: 3px;
+  pointer-events: none;
+}
+.scale-rule {
+  display: block; height: 7px;
+  border: 1px solid var(--ink-soft); border-top: 0;
+}
+.scale-label { font-size: 10px; color: var(--ink-soft); }
+
+.map-credit { position: absolute; left: 14px; bottom: 10px; color: var(--ink-soft); }
+
+/* The two keys sit beside the map on a wide screen, above it on a narrow one. */
+.map-keys { display: flex; flex-direction: column; gap: 14px; width: 226px; flex: none; }
+
+.shade-key {
+  background: #fff; border: 1px solid #b9d7e8; border-radius: var(--radius);
+  box-shadow: 0 3px 14px rgba(23, 52, 71, .09); padding: 14px 16px;
+}
+.shade-strip { display: flex; margin: 8px 0 4px; border-radius: 3px; overflow: hidden; }
+.shade-step { flex: 1 1 0; height: 10px; }
+.shade-ends { display: flex; justify-content: space-between; gap: 8px; }
+
+@media (max-width: 1099px) {
+  .map-keys { width: 100%; flex-direction: row; flex-wrap: wrap; }
+  .map-keys > * { flex: 1 1 240px; }
+}
+
+/* The small map on the sighting detail page: the same drawing, zoomed in. */
+.mini-map { max-height: 520px; cursor: default; }

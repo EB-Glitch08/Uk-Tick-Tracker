@@ -22,3 +22,31 @@ def round_place(lat, lon):
     Two reports from nearly the same spot then count as the same place.
     """
     return f"{round(lat, 3)},{round(lon, 3)}"
+
+
+# How precisely a member of the public's own report is shown to everyone else.
+# Two decimal places is roughly a kilometre.
+PUBLIC_DECIMAL_PLACES = 2
+
+
+def public_view(row):
+    """Turn a database row into what we are willing to show the public.
+
+    Someone reporting a tick usually does it where they found it, which may be
+    their home or a walk they take often. We keep what they told us, but the
+    position we hand back is rounded to about a kilometre, so the sighting is
+    useful on a map without pointing at an address.
+
+    Elanco's own records already sit on a city centre, so they are left alone.
+    """
+    sighting = dict(row)
+
+    if sighting.get("source") == "user":
+        for field in ("lat", "lon"):
+            if sighting.get(field) is not None:
+                sighting[field] = round(sighting[field], PUBLIC_DECIMAL_PLACES)
+        sighting["precision"] = "about 1 km"
+    else:
+        sighting["precision"] = "city centre"
+
+    return sighting

@@ -17,6 +17,7 @@ class SightingIn(BaseModel):
     lon: float = Field(ge=-8.7, le=1.8)                # longitude: west to east
     location: Optional[str] = Field(default=None, max_length=100)   # optional place name
     species: Optional[str] = Field(default="Unknown", max_length=100)  # "Unknown" if they can't tell
+    host: Optional[str] = Field(default=None, max_length=50)        # Dog, Cat, Person, Vegetation...
     notes: Optional[str] = Field(default=None, max_length=500)      # optional free text
 
     @field_validator("sighted_on")

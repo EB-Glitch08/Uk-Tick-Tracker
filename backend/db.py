@@ -40,14 +40,41 @@ CREATE TABLE IF NOT EXISTS sightings (
     dedupe_key  TEXT NOT NULL UNIQUE,
     created_at  TEXT NOT NULL
 );
+
+-- Indexes for the filters the site uses most. Without these, every search
+-- reads the whole table; with them SQLite can jump straight to the rows.
+CREATE INDEX IF NOT EXISTS idx_sightings_date     ON sightings (sighted_on);
+CREATE INDEX IF NOT EXISTS idx_sightings_location ON sightings (location);
+CREATE INDEX IF NOT EXISTS idx_sightings_species  ON sightings (species);
+CREATE INDEX IF NOT EXISTS idx_sightings_region   ON sightings (region);
+CREATE INDEX IF NOT EXISTS idx_sightings_map      ON sightings (is_complete, sighted_on);
 """
+
+# Columns added after the first version of the database existed. Each one is
+# added only if it isn't there yet, so an existing database is upgraded in
+# place and nobody has to delete their data and start again.
+LATER_COLUMNS = {
+    "host": "TEXT",        # what the tick was found on: Dog, Cat, Person, Vegetation
+}
+
+
+def add_missing_columns(conn):
+    """Bring an older database up to date with the columns we now expect."""
+    existing = {row["name"] for row in conn.execute("PRAGMA table_info(sightings)")}
+    for column, column_type in LATER_COLUMNS.items():
+        if column not in existing:
+            conn.execute(f"ALTER TABLE sightings ADD COLUMN {column} {column_type}")
 
 
 def init_db():
-    """Create the table if it isn't there yet. Safe to call every time."""
+    """Create the table if it isn't there yet, and upgrade it if it's old.
+
+    Safe to call every time the server starts.
+    """
     conn = get_connection()
     try:
         conn.executescript(SCHEMA)
+        add_missing_columns(conn)
         conn.commit()
     finally:
         conn.close()

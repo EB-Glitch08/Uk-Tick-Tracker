@@ -224,3 +224,5 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 data/*.json
+# Photographs people have added to their reports.
+data/uploads/

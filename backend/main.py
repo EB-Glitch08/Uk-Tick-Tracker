@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from backend.api import router
 from backend.errors import register_error_handlers
 from backend.insights import router as insights_router
+from backend.photos import router as photos_router
 from backend.search import router as search_router
 from backend.db import init_db
 from backend.importer import import_in_background
@@ -40,6 +41,7 @@ register_error_handlers(app)
 app.include_router(router)
 app.include_router(search_router)
 app.include_router(insights_router)
+app.include_router(photos_router)
 
 
 @app.get("/api/health")

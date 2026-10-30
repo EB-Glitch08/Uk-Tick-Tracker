@@ -260,3 +260,14 @@ def test_a_form_that_sends_nothing_for_species_is_accepted(api):
         assert reply.status_code == 201, reply.json()
         assert reply.json()["species"] == "Unknown"
         assert "Unknown" in reply.json()["warnings"][0]
+
+
+def test_the_known_places_are_served_for_the_report_form(api):
+    """The form needs coordinates for each place; the list lives in one file."""
+    body = api.get("/api/places").json()
+
+    assert body["total"] == 14
+    london = [p for p in body["places"] if p["name"] == "London"][0]
+    assert london["lat"] == 51.5074
+    assert london["region"] == "London"
+    assert [p["name"] for p in body["places"]] == sorted(p["name"] for p in body["places"])

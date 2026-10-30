@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException
 
 from backend.cities import CITIES
 from backend.db import get_connection
+from backend.region_groups import GROUP_ORDER, group_for
 
 router = APIRouter(prefix="/api/insights")
 
@@ -58,7 +59,25 @@ def sightings_per_region(
         conn.close()
 
     regions = [dict(row) for row in rows]
-    return {"total": sum(r["count"] for r in regions), "regions": regions}
+
+    # The page shows a short list of wider areas rather than every region, so
+    # the same figures are also returned folded into those groups.
+    areas = {}
+    for row in regions:
+        area = group_for(None if row["region"] == "Unknown" else row["region"])
+        areas[area] = areas.get(area, 0) + row["count"]
+
+    ordered = sorted(
+        ({"area": name, "count": count} for name, count in areas.items()),
+        key=lambda a: (-a["count"],
+                       GROUP_ORDER.index(a["area"]) if a["area"] in GROUP_ORDER else 99),
+    )
+
+    return {
+        "total": sum(r["count"] for r in regions),
+        "regions": regions,     # every region, in detail
+        "areas": ordered,       # the same totals, grouped for the page
+    }
 
 
 @router.get("/locations")
@@ -112,6 +131,9 @@ def sightings_per_location(
         place = places.setdefault(key, {
             "location": name,
             "region": region,
+            # The wider area the map shades, so the page doesn't have to work
+            # the grouping out for itself.
+            "area": group_for(region),
             "lat": lat,
             "lon": lon,
             "count": 0,
