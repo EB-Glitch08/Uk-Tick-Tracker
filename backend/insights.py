@@ -1,0 +1,185 @@
+"""Aggregate insight endpoints: totals per region and trends over time."""
+from datetime import date, timedelta
+from typing import Literal, Optional
+
+from fastapi import APIRouter, HTTPException
+
+from backend.db import get_connection
+
+router = APIRouter(prefix="/api/insights")
+
+
+def build_where(date_from, date_to, city=None, region=None, species=None):
+    """Turn the optional filters into a SQL WHERE clause and its values."""
+    if date_from and date_to and date_from > date_to:
+        raise HTTPException(status_code=422, detail="date_from must not be after date_to.")
+
+    conditions = []
+    values = []
+    if date_from:
+        conditions.append("sighted_on >= ?")
+        values.append(date_from.isoformat())
+    if date_to:
+        conditions.append("sighted_on <= ?")
+        values.append(date_to.isoformat())
+    if city:
+        conditions.append("location = ? COLLATE NOCASE")
+        values.append(city.strip())
+    if region:
+        conditions.append("region = ? COLLATE NOCASE")
+        values.append(region.strip())
+    if species:
+        conditions.append("species = ? COLLATE NOCASE")
+        values.append(species.strip())
+
+    where = ("WHERE " + " AND ".join(conditions)) if conditions else ""
+    return where, values
+
+
+@router.get("/regions")
+def sightings_per_region(
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    species: Optional[str] = None,
+):
+    """How many sightings there are in each region, biggest first."""
+    where, values = build_where(date_from, date_to, species=species)
+
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT COALESCE(region, 'Unknown') AS region, COUNT(*) AS count "
+            f"FROM sightings {where} "
+            "GROUP BY COALESCE(region, 'Unknown') ORDER BY count DESC, region",
+            values,
+        ).fetchall()
+    finally:
+        conn.close()
+
+    regions = [dict(row) for row in rows]
+    return {"total": sum(r["count"] for r in regions), "regions": regions}
+
+
+@router.get("/locations")
+def sightings_per_location(
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    species: Optional[str] = None,
+):
+    """Sightings grouped by place, ready for the map.
+
+    The map needs every sighting, which would be thousands of rows. Because all
+    of our sightings sit at a known place, we can send one row per place with
+    the counts worked out here instead. That keeps the response small however
+    much data we hold, and gives the map the bubble size and species mix it
+    needs in a single request.
+    """
+    where, values = build_where(date_from, date_to, species=species)
+
+    # Only sightings with a position can go on the map.
+    where = (where + " AND is_complete = 1") if where else "WHERE is_complete = 1"
+
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            "SELECT COALESCE(location, 'Other') AS location, region, lat, lon, species, "
+            "COUNT(*) AS count, MAX(sighted_on) AS latest "
+            f"FROM sightings {where} "
+            # Sightings in a city group together. Ones that aren't near any city
+            # have no city name, so they group by their own position instead and
+            # get a bubble of their own rather than being piled on top of
+            # unrelated sightings somewhere else.
+            "GROUP BY COALESCE(location, ROUND(lat, 2) || ',' || ROUND(lon, 2)), species "
+            "ORDER BY location, count DESC",
+            values,
+        ).fetchall()
+    finally:
+        conn.close()
+
+    # Fold the per-species rows into one entry per place.
+    places = {}
+    for row in rows:
+        place = places.setdefault((row["location"], row["lat"], row["lon"]), {
+            "location": row["location"],
+            "region": row["region"],
+            "lat": row["lat"],
+            "lon": row["lon"],
+            "count": 0,
+            "latest": row["latest"],
+            "species": [],
+        })
+        place["count"] += row["count"]
+        place["latest"] = max(place["latest"], row["latest"])
+        place["species"].append({"species": row["species"], "count": row["count"]})
+
+    locations = sorted(places.values(), key=lambda p: p["count"], reverse=True)
+    return {"total": sum(p["count"] for p in locations), "locations": locations}
+
+
+def fill_gaps(counts, interval):
+    """Add zero-count periods between the first and last one.
+
+    Without this, a quiet month would simply be missing, and a chart would
+    draw a straight line over the gap instead of showing the dip to zero.
+    """
+    if not counts:
+        return []
+
+    first, last = min(counts), max(counts)
+    points = []
+
+    if interval == "month":
+        year, month = int(first[:4]), int(first[5:7])
+        end = (int(last[:4]), int(last[5:7]))
+        while (year, month) <= end:
+            key = f"{year:04d}-{month:02d}"
+            points.append({"period": key, "count": counts.get(key, 0)})
+            month += 1
+            if month == 13:
+                year, month = year + 1, 1
+    else:
+        # Weeks are labelled by the Monday they start on, so step 7 days at a time.
+        day = date.fromisoformat(first)
+        end_day = date.fromisoformat(last)
+        while day <= end_day:
+            key = day.isoformat()
+            points.append({"period": key, "count": counts.get(key, 0)})
+            day += timedelta(days=7)
+
+    return points
+
+
+@router.get("/trends")
+def trends_over_time(
+    interval: Literal["week", "month"] = "month",
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None,
+    city: Optional[str] = None,
+    region: Optional[str] = None,
+    species: Optional[str] = None,
+):
+    """Number of sightings per week or per month, oldest first."""
+    where, values = build_where(date_from, date_to, city, region, species)
+
+    if interval == "month":
+        period_sql = "strftime('%Y-%m', sighted_on)"            # e.g. "2020-03"
+    else:
+        # The Monday of the week the sighting falls in, e.g. "2020-03-09".
+        period_sql = "date(sighted_on, 'weekday 0', '-6 days')"
+
+    conn = get_connection()
+    try:
+        rows = conn.execute(
+            f"SELECT {period_sql} AS period, COUNT(*) AS count "
+            f"FROM sightings {where} GROUP BY period ORDER BY period",
+            values,
+        ).fetchall()
+    finally:
+        conn.close()
+
+    counts = {row["period"]: row["count"] for row in rows}
+    return {
+        "interval": interval,
+        "total": sum(counts.values()),
+        "points": fill_gaps(counts, interval),
+    }
