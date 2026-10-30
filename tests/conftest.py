@@ -5,6 +5,7 @@ against a pretend version of Elanco's API, so the tests are quick, repeatable
 and never touch the real data or the real service.
 """
 import sys
+import threading
 from pathlib import Path
 
 import pytest
@@ -34,6 +35,24 @@ FAKE_ELANCO = [
     {"id": "8", "date": "2024-06-01T06:00:00Z", "species": "Fox/badger tick",
      "latinName": "Ixodes canisuga", "location": "Cardiff"},         # carries a time zone
 ]
+
+
+@pytest.fixture(autouse=True)
+def wait_for_the_import_to_finish(monkeypatch):
+    """Let any start-up import finish before the next test begins.
+
+    The server imports Elanco's data in a background job. If a test ended while
+    one was still running, it would carry on into the next test and interfere
+    with it, which made the results depend on how fast the machine was.
+
+    Asking for monkeypatch here is deliberate: it makes this wait happen before
+    the pretend Elanco is taken away, so a job that is still finishing can't
+    reach the real one.
+    """
+    yield
+    for job in threading.enumerate():
+        if job.name == "elanco-import" and job.is_alive():
+            job.join(timeout=10)
 
 
 @pytest.fixture

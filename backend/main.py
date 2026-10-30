@@ -30,7 +30,8 @@ async def lifespan(app):
     # than only on the very first run. Re-importing is safe because duplicates
     # are blocked by the database. It runs in a background thread so the server
     # starts straight away, even if Elanco is slow, rate-limiting us or down.
-    threading.Thread(target=import_in_background, daemon=True).start()
+    threading.Thread(target=import_in_background, daemon=True,
+                     name="elanco-import").start()
     yield
 
 

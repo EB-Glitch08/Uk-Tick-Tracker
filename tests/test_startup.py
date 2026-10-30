@@ -60,7 +60,11 @@ def test_a_report_can_be_saved_while_the_import_is_running(tmp_path, monkeypatch
 
 def test_restarting_soon_after_does_not_ask_elanco_again(tmp_path, monkeypatch):
     """Elanco limits how often it can be called, and the server reloads on every
-    code change while developing. Data that is already fresh is left alone."""
+    code change while developing. Data that is already fresh is left alone.
+
+    This calls the start-up job itself rather than starting the server three
+    times, so the test doesn't depend on background threads finishing in time.
+    """
     monkeypatch.setattr(db, "DB_PATH", tmp_path / "test.db")
 
     calls = []
@@ -71,12 +75,8 @@ def test_restarting_soon_after_does_not_ask_elanco_again(tmp_path, monkeypatch):
 
     monkeypatch.setattr(importer, "fetch_sightings", counted)
 
-    for _ in range(3):
-        with TestClient(main.app) as client:
-            for _ in range(50):
-                if client.get("/api/sightings").json()["total"] > 0:
-                    break
-                time.sleep(0.1)
+    for _ in range(3):                      # as if the server restarted 3 times
+        importer.import_in_background()
 
     assert len(calls) == 1
 
@@ -84,19 +84,17 @@ def test_restarting_soon_after_does_not_ask_elanco_again(tmp_path, monkeypatch):
 def test_stale_data_is_refreshed(tmp_path, monkeypatch):
     """Once the data is old enough, the next start fetches it again."""
     monkeypatch.setattr(db, "DB_PATH", tmp_path / "test.db")
-    monkeypatch.setattr(importer, "fetch_sightings", lambda: list(FAKE_ELANCO))
     monkeypatch.setattr(importer, "FRESH_FOR_MINUTES", 0)   # nothing counts as fresh
 
     calls = []
-    real_import = importer.import_elanco
-    monkeypatch.setattr(importer, "import_elanco",
-                        lambda: (calls.append(1), real_import())[1])
+
+    def counted():
+        calls.append(1)
+        return list(FAKE_ELANCO)
+
+    monkeypatch.setattr(importer, "fetch_sightings", counted)
 
     for _ in range(2):
-        with TestClient(main.app) as client:
-            for _ in range(50):
-                if client.get("/api/sightings").json()["total"] > 0:
-                    break
-                time.sleep(0.1)
+        importer.import_in_background()
 
     assert len(calls) == 2
