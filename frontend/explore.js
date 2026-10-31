@@ -36,7 +36,14 @@
      every circle the same in one case and leave five colours unused in the
      other. */
   function makeBands(places) {
-    const highest = places.reduce(function (most, p) { return Math.max(most, p.count); }, 1);
+    return bandsForCounts(places.map(function (p) { return p.count; }));
+  }
+
+  /* The same six colours are used for the regions and for the circles, so a
+     colour always means "about this many". The thresholds differ between the
+     two because a region holds several places, and each key says so. */
+  function bandsForCounts(counts) {
+    const highest = counts.reduce(function (most, c) { return Math.max(most, c); }, 1);
     const step = roundStep(highest / BAND_COLOURS.length);
 
     return BAND_COLOURS.map(function (colour, index) {
@@ -195,22 +202,6 @@
   }
 
   /* ---- The map ------------------------------------------------------------- */
-
-  function legend(bands) {
-    return el("div", { class: "map-legend" }, [
-      el("p", { class: "legend-title", text: "Reports per place" }),
-      el("ul", { class: "legend-list" }, bands.map(function (band) {
-        return el("li", {}, [
-          el("span", { class: "legend-dot", style: "background:" + band.colour }),
-          el("span", { text: band.label }),
-        ]);
-      })),
-      el("p", { class: "legend-note tiny",
-                text: "Numbers show how many sightings are recorded at that place. " +
-                      "An empty area means nothing has been reported there, " +
-                      "not that there are no ticks." }),
-    ]);
-  }
 
   /* ---- The list view, which is also the map's accessible equivalent -------- */
 
@@ -478,14 +469,24 @@
         : null;
 
       const bands = makeBands(data.places.locations);
+
+      // The regions are banded on their own totals, which are far larger.
+      const areaTotals = {};
+      data.places.locations.forEach(function (place) {
+        if (place.area) areaTotals[place.area] = (areaTotals[place.area] || 0) + place.count;
+      });
+      const areaBands = bandsForCounts(Object.keys(areaTotals).map(function (a) {
+        return areaTotals[a];
+      }));
+
       const drawing = el("div", { class: "map-figure" }, [
         el("div", { class: "map-keys" }, [
-          T.ukmap.shadingLegend(data.places.locations),
-          legend(bands),
+          T.ukmap.colourKey(areaBands, bands),
         ]),
         T.ukmap.draw({
           places: data.places.locations,
           bands: bands,
+          areaBands: areaBands,
           bandFor: bandFor,
           selected: filters.place,
           onPick: function (place) {

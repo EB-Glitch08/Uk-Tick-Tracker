@@ -51,16 +51,35 @@
     "Adults and nymphs have eight legs; larvae have six. They range from about the size of a " +
     "poppy seed to a small pea, and get larger and darker as they feed.";
 
-  const PREVENTION = [
-    { icon: "leaf",   title: "Keep to the path",
-      text: "Walk on clearly defined paths so you don't brush against vegetation." },
-    { icon: "eye",    title: "Wear light colours",
-      text: "Ticks are far easier to spot and brush off pale clothing." },
-    { icon: "shield", title: "Use a repellent",
-      text: "Repellents such as DEET, applied as the label directs." },
-    { icon: "paw",    title: "Make checking a habit",
-      text: "Check clothes and skin while you are out and again when you get home. " +
-            "Check children and pets too." },
+  /* Bite prevention, grouped the way a reader actually uses it: things to do
+     before heading out, then how to check afterwards. Wording and facts are
+     unchanged from the UKHSA leaflet — only the grouping is new. */
+  const PREVENTION_GROUPS = [
+    {
+      title: "Before you go out",
+      tips: [
+        { icon: "leaf", title: "Keep to the path",
+          text: "Walk on clearly defined paths so you don't brush against vegetation." },
+        { icon: "eye", title: "Wear light colours",
+          text: "Ticks are far easier to spot and brush off pale clothing." },
+        { icon: "shield", title: "Use a repellent",
+          text: "Repellents such as DEET, applied as the label directs." },
+        { icon: "pin", title: "Know where ticks gather",
+          text: "Moist places with leaf litter or longer grass: woodland, grassland, " +
+                "moorland and heathland, and some urban parks and gardens." },
+      ],
+    },
+    {
+      title: "Checking yourself and pets",
+      tips: [
+        { icon: "paw", title: "Make checking a habit",
+          text: "Check clothes and skin while you are out and again when you get home. " +
+                "Check children and pets too." },
+        { icon: "search", title: "Check the likely spots",
+          text: "On the body they gather in skin folds — the armpits, groin, waistband, " +
+                "the back of the neck and the hairline." },
+      ],
+    },
   ];
 
   const REMOVAL = [
@@ -70,11 +89,6 @@
     "Clean the bite with soap and water, or an antibacterial wash.",
     "Watch the area for several weeks.",
   ];
-
-  const WHERE_TICKS_ARE =
-    "Moist places with leaf litter or longer grass: woodland, grassland, moorland and " +
-    "heathland, and some urban parks and gardens. On the body they gather in skin folds — " +
-    "the armpits, groin, waistband, the back of the neck and the hairline.";
 
   /* ---- An illustration, drawn rather than photographed ---------------------- */
 
@@ -204,7 +218,6 @@
     ]));
 
     view.appendChild(el("nav", { class: "guide-nav", "aria-label": "Sections of this guide" }, [
-      el("a", { href: "#guide-species", text: "Species in this data" }),
       el("a", { href: "#guide-prevention", text: "Bite prevention" }),
       el("a", { href: "#guide-season", text: "Seasonal activity" }),
       el("span", { class: "tiny muted",
@@ -221,7 +234,7 @@
     ]));
 
     /* --- species --- */
-    view.appendChild(el("h2", { id: "guide-species", class: "section-title",
+    view.appendChild(el("h2", { class: "section-title",
                                 text: "The species in this data" }));
     view.appendChild(el("p", { class: "lede small",
       text: "Elanco's dataset records these five names. Each card explains what the name " +
@@ -233,19 +246,25 @@
       })));
 
     /* --- prevention and removal --- */
-    view.appendChild(el("div", { class: "two-up", id: "guide-prevention" }, [
+    view.appendChild(el("h2", { id: "guide-prevention", class: "section-title",
+                                text: "Bite prevention" }));
+    view.appendChild(el("p", { class: "lede small",
+      text: "Most bites are avoided with a few habits before you go out and a quick check " +
+            "once you're back. What to do if one has already attached is covered too." }));
+    view.appendChild(el("div", { class: "two-up" }, [
+      el("section", { class: "card" }, PREVENTION_GROUPS.map(function (group) {
+        return el("div", { class: "prevention-group" }, [
+          el("h3", { class: "step-title", text: group.title }),
+          el("ul", { class: "next-steps" }, group.tips.map(function (tip) {
+            return el("li", {}, [icon(tip.icon, "17"), el("div", {}, [
+              el("p", { class: "attribute-value", text: tip.title }),
+              el("p", { class: "tiny muted", text: tip.text }),
+            ])]);
+          })),
+        ]);
+      })),
       el("section", { class: "card" }, [
-        el("h2", { class: "detail-heading-sm", text: "Small habits, better protection" }),
-        el("ul", { class: "next-steps" }, PREVENTION.map(function (tip) {
-          return el("li", {}, [icon(tip.icon, "17"), el("div", {}, [
-            el("p", { class: "attribute-value", text: tip.title }),
-            el("p", { class: "tiny muted", text: tip.text }),
-          ])]);
-        })),
-        el("p", { class: "tiny muted", text: "Where ticks are: " + WHERE_TICKS_ARE }),
-      ]),
-      el("section", { class: "card" }, [
-        el("h2", { class: "detail-heading-sm", text: "If you find an attached tick" }),
+        el("h3", { class: "step-title", text: "If you find one attached" }),
         el("ol", { class: "tips" }, REMOVAL.map(function (line) {
           return el("li", { text: line });
         })),
@@ -262,6 +281,10 @@
         el("h2", { class: "detail-heading-sm", text: "When are sightings reported?" }),
         el("span", { class: "panel-note", text: "From the sightings we hold" }),
       ]),
+      el("p", { class: "lede small",
+        text: "Ticks are present all year in the UK and most active between spring and " +
+              "autumn. The chart below counts our sightings by the month they were reported, " +
+              "for the whole UK or for one place you choose." }),
       el("div", { class: "field-head" }, [
         el("div", { class: "filter filter-place" }, [
           el("label", { class: "filter-label", for: "season-place", text: "Show the year for" }),
@@ -275,9 +298,7 @@
       ]),
       seasonChart(monthTotals),
       el("p", { class: "tiny muted",
-        text: "Every sighting we hold, grouped by the month it happened. Ticks are present all " +
-              "year in the UK and are most active between spring and autumn; this chart shows " +
-              "when sightings were reported, which is not the same as how many ticks there are." }),
+        text: "This counts reported sightings, not how many ticks there are." }),
     ]));
 
     view.appendChild(el("div", { class: "msg msg-ok guide-foot" }, [

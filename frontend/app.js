@@ -131,8 +131,8 @@ window.Tracker = (function () {
 
   /* What a tick was found on, and the icon that goes with each. */
   const HOSTS = [
-    { name: "Dog",               icon: "paw" },
-    { name: "Cat",               icon: "paw" },
+    { name: "Dog",               icon: "dog" },
+    { name: "Cat",               icon: "cat" },
     { name: "Person",            icon: "users" },
     { name: "Vegetation",        icon: "leaf" },
     { name: "Other / not sure",  icon: "info" },

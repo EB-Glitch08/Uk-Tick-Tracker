@@ -671,8 +671,15 @@ textarea.field { min-height: 92px; resize: vertical; line-height: 1.5; }
 .tips { margin: 12px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
 .tips li { font-size: 13px; line-height: 1.55; }
 
-/* The list of prevention habits needs room to breathe above the closing note. */
-.next-steps + .tiny { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); }
+/* Sub-groups of prevention tips within one card: "before you go out",
+   "checking yourself and pets". */
+.prevention-group + .prevention-group {
+  margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--divider);
+}
+.prevention-group .step-title { margin-bottom: 10px; }
+
+/* The "if you find one attached" card needs room above its warning note. */
+.tips + .msg { margin-top: 14px; }
 
 /* ============================================================================
    The map
@@ -778,3 +785,15 @@ textarea.field { min-height: 92px; resize: vertical; line-height: 1.5; }
 
 /* The small map on the sighting detail page: the same drawing, zoomed in. */
 .mini-map { max-height: 520px; cursor: default; }
+
+/* The single key shared by the shaded regions and the circles. */
+.colour-key { width: 100%; }
+.key-strip { display: flex; gap: 2px; margin: 10px 0 4px; border-radius: 3px; overflow: hidden; }
+.key-step { flex: 1 1 0; height: 10px; }
+.key-ends { margin-bottom: 12px; }
+.key-row + .key-row { margin-top: 12px; }
+.key-row-label {
+  font-size: 11px; font-weight: 700; color: var(--blue-deep); margin-bottom: 5px;
+}
+.key-list { list-style: none; margin: 0 0 8px; padding: 0; }
+.key-list li { display: flex; align-items: center; gap: 8px; padding: 2px 0; color: var(--blue-deep); }

@@ -28,11 +28,20 @@
   }
 
   /* ---- Colours -------------------------------------------------------------
-     Region shading runs through one hue, from palest to deepest, so more
-     sighting always means darker. The circles keep the separate set of band
-     colours from the design, which answers a different question, so the two
-     are never mistaken for one another. */
-  const SHADES = ["#f1f8f3", "#dcefe3", "#bfe2d2", "#9ad4c1", "#6cc0ad", "#3da795"];
+     One colour scale does both jobs. A region and a circle of the same colour
+     carry the same meaning — roughly this busy — so there is one thing to
+     learn rather than two. A region is filled with a pale wash of its colour,
+     so the circles sitting on top of it stay legible. */
+  const NOTHING = "#f4f7f5";          // a region with nothing reported in it
+
+  /** Mix a colour with white. 0 gives white, 1 gives the colour itself. */
+  function wash(colour, strength) {
+    const value = parseInt(colour.slice(1), 16);
+    const channels = [(value >> 16) & 255, (value >> 8) & 255, value & 255];
+    return "rgb(" + channels.map(function (channel) {
+      return Math.round(255 + (channel - 255) * strength);
+    }).join(",") + ")";
+  }
 
   /* Where each place's name sits relative to its circle. On a map this size the
      English midlands are crowded, so the sides are chosen by hand rather than
@@ -45,11 +54,6 @@
     London:      "right",  Southampton: "below",
   };
 
-  function shadeFor(count, highest) {
-    if (!count) return SHADES[0];
-    const step = Math.ceil((count / Math.max(1, highest)) * (SHADES.length - 1));
-    return SHADES[Math.min(SHADES.length - 1, Math.max(1, step))];
-  }
 
   /* ---- Working out the scale bar -------------------------------------------
      Two cities we know the real distance between, measured against their
@@ -117,9 +121,6 @@
       const area = place.area || place.region_group || null;
       if (area) perArea[area] = (perArea[area] || 0) + place.count;
     });
-    const busiestArea = Object.keys(perArea)
-      .reduce(function (most, key) { return Math.max(most, perArea[key]); }, 0);
-
     const picture = svg("svg", {
       class: "uk-map", viewBox: data.viewBox, role: "group",
       "aria-label": "Map of the United Kingdom. " + places.length +
@@ -135,9 +136,11 @@
     const areaLayer = svg("g", { class: "map-areas" });
     data.areas.forEach(function (area) {
       const count = perArea[area.name] || 0;
+      const fill = count
+        ? wash(options.bandFor(options.areaBands, count).colour, 0.3)
+        : NOTHING;
       const shape = svg("path", {
-        d: area.path, class: "map-area", fill: shadeFor(count, busiestArea),
-        "data-area": area.id,
+        d: area.path, class: "map-area", fill: fill, "data-area": area.id,
       });
       const tip = svg("title", {});
       tip.textContent = area.name + ": " + T.number(count) +
@@ -325,27 +328,36 @@
     return frame;
   }
 
-  /** The key to the shading, which belongs beside the map rather than on it. */
-  function shadingLegend(places) {
-    const perArea = {};
-    places.forEach(function (place) {
-      if (place.area) perArea[place.area] = (perArea[place.area] || 0) + place.count;
-    });
-    const highest = Object.keys(perArea)
-      .reduce(function (most, key) { return Math.max(most, perArea[key]); }, 0);
-
-    return el("div", { class: "shade-key" }, [
-      el("p", { class: "legend-title", text: "Sightings per region" }),
-      el("div", { class: "shade-strip", "aria-hidden": "true" },
-        SHADES.slice(1).map(function (colour) {
-          return el("span", { class: "shade-step", style: "background:" + colour });
+  /* The key. One row of colours, then what each one means for a region and for
+     a place, because the two are counted on different scales. */
+  function colourKey(areaBands, placeBands) {
+    function row(label, bands) {
+      return el("div", { class: "key-row" }, [
+        el("p", { class: "key-row-label", text: label }),
+        el("ul", { class: "key-list" }, bands.map(function (band) {
+          return el("li", {}, [
+            el("span", { class: "legend-dot", style: "background:" + band.colour }),
+            el("span", { class: "tiny", text: band.label.replace(/ · (fewest|most)$/, "") }),
+          ]);
         })),
-      el("div", { class: "shade-ends" }, [
-        el("span", { class: "tiny muted", text: "Fewer" }),
-        el("span", { class: "tiny muted", text: highest ? T.number(highest) + " most" : "" }),
-      ]),
+      ]);
+    }
+
+    return el("div", { class: "map-legend colour-key" }, [
+      el("p", { class: "legend-title", text: "How many sightings" }),
+      el("div", { class: "key-strip", "aria-hidden": "true" },
+        placeBands.map(function (band) {
+          return el("span", { class: "key-step", style: "background:" + band.colour });
+        })),
+      el("p", { class: "tiny muted key-ends", text: "Fewest on the left, most on the right." }),
+      row("A circle, at one place", placeBands),
+      row("A shaded region", areaBands),
+      el("p", { class: "legend-note tiny",
+                text: "A region is shaded in the same colour, paler, so the circles stay " +
+                      "readable on top of it. An unshaded region means nothing has been " +
+                      "reported there, not that there are no ticks." }),
     ]);
   }
 
-  T.ukmap = { draw: draw, shadingLegend: shadingLegend, SHADES: SHADES };
+  T.ukmap = { draw: draw, colourKey: colourKey, wash: wash };
 })();
