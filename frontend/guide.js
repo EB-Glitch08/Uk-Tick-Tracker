@@ -217,9 +217,24 @@
       el("span", { class: "chip chip-mint" }, [icon("bug", "13"), "Pet-owner field notes"]),
     ]));
 
+    /* These jump to sections further down THIS page. A plain "#id" href would
+       otherwise be picked up by the app's hash router (it treats location.hash
+       as the page to show) and bounce the reader to Explore instead of
+       scrolling — so the click is handled here and the hash is never touched. */
+    function jumpTo(id) {
+      return function (event) {
+        event.preventDefault();
+        const target = document.getElementById(id);
+        if (!target) return;
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        target.setAttribute("tabindex", "-1");
+        target.focus({ preventScroll: true });
+      };
+    }
+
     view.appendChild(el("nav", { class: "guide-nav", "aria-label": "Sections of this guide" }, [
-      el("a", { href: "#guide-prevention", text: "Bite prevention" }),
-      el("a", { href: "#guide-season", text: "Seasonal activity" }),
+      el("a", { href: "#guide-prevention", text: "Bite prevention", onclick: jumpTo("guide-prevention") }),
+      el("a", { href: "#guide-season", text: "Seasonal activity", onclick: jumpTo("guide-season") }),
       el("span", { class: "tiny muted",
                    text: "Illustrations are indicative, not a diagnostic tool." }),
     ]));
